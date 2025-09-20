@@ -1,5 +1,5 @@
 ### PAMARCMiP 观测: INP浓度与温度关系图(未扣除背景值)
-### 仪器: LINA(Leipzig Ice Nucleation Array)
+### 仪器: INDA(Ice Nucleation Droplet Array)
 ### 读取多个 tab 数据文件, 绘制散点图
 ### 时间: 2025-09-20
 ### 作者：付弘宇
@@ -19,13 +19,13 @@ ax.set_yscale('log')
 ax.set_xlabel('Temperature(℃)')
 ax.set_ylabel('INP concentration(#/L)')
 ax.tick_params(which='both', top=True, bottom=True, left=True, right=True, direction='in')
-ax.set_title('INP concentration vs Temperature\nLINA(Leipzig Ice Nucleation Array)')
+ax.set_title('INP concentration vs Temperature\nINDA(Ice Nucleation Droplet Array)')
 
 for data_file in data_files:
 
     df = pd.read_table(data_file, skiprows=19)
-    x = df[df.columns[4]]# Temperature (℃)
-    y = df[df.columns[5]]# INP concentration (#/L)
+    x = df[df.columns[0]]# Temperature (℃)
+    y = df[df.columns[1]]# INP concentration (#/L)
 
     if min(y[y>0]) < miny:
         miny = min(y[y>0])
@@ -36,4 +36,4 @@ for data_file in data_files:
     ax.scatter(x,y,label=data_file.stem)
 
 ax.legend(fontsize='xx-small', loc='best')
-plt.savefig("./master0_2025/PAMARCMiP/INP_vs_Temperature_Hartmann_LINA.png", bbox_inches='tight')
+plt.savefig("./master0_2025/PAMARCMiP/INP_vs_Temperature_Hartmann_INDA.png", bbox_inches='tight')

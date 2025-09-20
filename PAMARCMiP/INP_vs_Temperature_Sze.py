@@ -1,4 +1,5 @@
-### PAMARCMiP 观测: INP浓度与温度关系图
+### AC3 观测: INP浓度与温度关系图
+### Sze 等人 2 年的离线观测数据
 ### 读取一个 tab 数据文件, 绘制散点图
 ### 时间: 2025-09-18
 ### 作者：付弘宇
@@ -24,7 +25,9 @@ rows, cols = df.shape
 for row in np.arange(rows):
     x = T
     y = df.iloc[row, 8:][::-1]  # 取第9列到最后一列, 并反转顺序
-    ax.scatter(x, y)
+    ax.scatter(x, y
+               #,label=df.iloc[row, 0]  # 用第一列作为标签(Sample label), 但标签太多，故弃用
+    )
 
-#plt.show()
-plt.savefig("./master0_2025/PAMARCMiP/INP_vs_Temperature.png", bbox_inches='tight')
+#ax.legend(fontsize='xx-small', loc='best')
+plt.savefig("./master0_2025/PAMARCMiP/INP_vs_Temperature_Sze.png", bbox_inches='tight')
