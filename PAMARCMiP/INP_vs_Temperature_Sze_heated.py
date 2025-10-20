@@ -18,13 +18,13 @@ ax.set_title('INP concentration vs Temperature')
 #ax.set_ylim(10**(-2),10**6)# 设置y轴范围
 
 T = np.arange(-30.4, -4.4, 0.1)# 自行设置温度区间
-df = pd.read_table(r"D:\Data\PAMARCMiP\Sze-etal_2023_NINP.tab", skiprows=286)
+df = pd.read_table("./Data/PAMARCMiP/Sze-etal_2023_NINP.tab", skiprows=286)
 rows, cols = df.shape
 print(df.iloc[2, :])# 查看某一行数据
 # 绘制散点图
 for row in np.arange(rows):
     x = T
-    y = df.iloc[row, 8:][::-1]  # 取第9列到最后一列, 并反转顺序
+    y = df.iloc[row, 8:][::-1]  # 取第9列到最后一列, 并反转顺序(使温度由降序转变为升序)
     #print(df['T:Temp descr (Thermal treatment (85°C) yes/no)'][row] == 'yes')
     #print(df['T:Temp descr (Thermal treatment (90°C) yes/no)'][row] == 'yes')
 

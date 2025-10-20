@@ -1,6 +1,5 @@
 ### ISDAC 观测: INP浓度与温度关系图
-### 读取多个 TXT 文件, 绘制散点图. 
-### 由于先整合数据再绘图, 无法区分不同文件(即不同采样时间). 但不先整合, 得到的图会很奇怪, 有x轴重复的情况
+### 读取多个 TXT 文件, 绘制散点图, 散点的颜色表示过饱和度(SSw)
 ### 时间: 2025-10-11
 ### 作者：付弘宇
 
@@ -18,7 +17,6 @@ ax.set_title('INP concentration vs Temperature')
 
 data_dir = pathlib.Path("./data/ISDAC/brooks-cfdc")# 数据文件夹路径
 csv_files = list(data_dir.glob('*.txt'))# 获取所有 TXT 文件
-#colors = list(mcolors.XKCD_COLORS.values())
 all_df = pd.DataFrame() # 用于存储所有数据
 
 for csv_file in csv_files:
@@ -31,9 +29,11 @@ for csv_file in csv_files:
 #all_df = all_df.sort_values(by='Aerosol T (C)') # 按温度排序(加不加这一行, 对可视化没有影响)
 x = all_df['Aerosol T (C)']
 y = all_df['IN Conc (cm-3)']
-ax.scatter(x=x, y=y)
+c = all_df['SS. Ice (%)']
+sc = ax.scatter(x=x, y=y, c=c, cmap='Blues')
 
 # 添加图例
-#ax.legend(fontsize='xx-small', loc='best', ncol=4)
+cbar = plt.colorbar(sc, ax=ax)
+cbar.set_label('SS.Ice (%)')
 
-plt.savefig("./master0_2025/ISDAC/INP_vs_Temperature.png", bbox_inches='tight')
+plt.savefig("./master0_2025/ISDAC/INP_Temperature_SSi.png", bbox_inches='tight')
