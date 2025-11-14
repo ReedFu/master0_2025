@@ -1,0 +1,1 @@
+This repository contains data-processing and plotting scripts developed during the first semester of my master’s degree, with a focus on the observation and parameterization of ice-nucleating particles (INPs).
