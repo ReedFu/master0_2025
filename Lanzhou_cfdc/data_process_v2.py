@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 # 将全年CFDC数据输出为单个CSV文件
-# 目前版本: v2.0
-# 在v1.0的基础上, 修改了数据处理的思路, 实现: 采样段前后的背景段取平均, 作为这部分采样段的背景值, 如果只有前背景段, 则取前背景段作为采样段的背景值.
-# 对于温度和过饱和度的取值, 其实也有问题: 现在是取每个采样段的最后一个值, 而不是计算平均值. 需要在后续版本中改进.
-# 后续版本计划: v2.1, 计算温度和过饱和度的平均值; v2.2, 增加数据质量控制步骤, 去除异常值(包括0值, SS_w<=4的值, 2024年9月17日之前未经验证的值)等; 增加一列"活化温度列"
+# 目前版本: v2.1
+# 版本记录:
+# v2.0: 在v1.0的基础上, 修改了数据处理的思路, 实现: 采样段前后的背景段取平均, 作为这部分采样段的背景值. (如果仅有前背景段, 则取前背景段作为采样段的背景值.)
+# v2.1: 修改了温度和过饱和度的计算方式, 采用平均值而非最后一个值.
+# 后续版本计划: v2.2, 增加数据质量控制步骤, 去除异常值(包括0值, SS_w<=4的值, 2024年9月17日之前未经验证的值)等; 增加一列"活化温度列"
 
 import pandas as pd
 import numpy as np
@@ -61,6 +62,33 @@ def sum_with_next(s: pd.Series) -> pd.Series:
         s.iloc[i] = s.iloc[i] + s.iloc[i+1]
         
     return s 
+
+def mean_by_consecutive_index(s: pd.Series) -> pd.Series:
+    '''
+    Docstring for mean_by_consecutive_index
+    
+    :param s: Description: 输入的 Series 对象, 索引为整数, 有几小段连续的值, 但这几段之间不连续.
+    :type s: pd.Series
+    :return: Description: 输出为 Series 对象, 将每段连续索引的值分组求平均, 每组的索引为每段的终点索引.
+    :rtype: Series[Any]
+    '''
+    #if s.empty:
+        #return s.copy()
+
+    # 如果你的“连续=差1”是按索引递增来定义的，建议确保索引已排序
+    # s = s.sort_index()
+
+    tag = s.index.to_series().diff().ne(1).cumsum()
+
+    # 1) 每段求平均
+    out = s.groupby(tag, sort=False).mean()
+
+    # 2) 每段终点索引
+    end_idx = s.index.to_series().groupby(tag, sort=False).max()
+
+    out.index = end_idx.to_numpy()
+    #out.index.name = s.index.name  # 可选：保留索引名
+    return out
 
 def compute_net(sam, bac):
     """
@@ -151,9 +179,12 @@ def main():
             vol_sam = sum_by_consecutive_index(aerosol_flow_sam) / 60  # standard L
             conc_inp_sam = count_sam / vol_sam # unit: #/L(standard)
 
-            T_inp = data['Lamina Average T [C]'][sam_toggle==True][data['Lamina T Set [C]']==temp].reindex(time.index, fill_value=np.nan)
-            SS_w = data['Lamina SS_w'][sam_toggle==True][data['Lamina T Set [C]']==temp].reindex(time.index, fill_value=np.nan)
-            SS_i = data['Lamina SS_i'][sam_toggle==True][data['Lamina T Set [C]']==temp].reindex(time.index, fill_value=np.nan)
+            T_inp = data['Lamina Average T [C]'][sam_toggle==True][data['Lamina T Set [C]']==temp]
+            T_inp = mean_by_consecutive_index(T_inp)
+            SS_w = data['Lamina SS_w'][sam_toggle==True][data['Lamina T Set [C]']==temp]
+            SS_w = mean_by_consecutive_index(SS_w)
+            SS_i = data['Lamina SS_i'][sam_toggle==True][data['Lamina T Set [C]']==temp]
+            SS_i = mean_by_consecutive_index(SS_i)
             #### 计算净INP浓度
             N_inp_avg_net = compute_net(sam=conc_inp_sam, bac=conc_inp_bac)
             #### 保存为列表格式
@@ -200,7 +231,7 @@ def main():
     df_inp['season'] = df_inp['Date'].dt.month.map(season_of_month)
 
     # 输出为CSV文件
-    df_inp.to_csv(r"D:\Coding\master0_2025\Lanzhou_cfdc\N_INP(202409-202509)v2.0.csv", index=False)
+    df_inp.to_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.1.csv", index=False)
 
 
 if __name__ == "__main__":
