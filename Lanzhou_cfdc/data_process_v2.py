@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 # 将全年CFDC数据输出为单个CSV文件
-# 目前版本: v2.1
+# 目前版本: v2.2
 # 版本记录:
 # v2.0: 在v1.0的基础上, 修改了数据处理的思路, 实现: 采样段前后的背景段取平均, 作为这部分采样段的背景值. (如果仅有前背景段, 则取前背景段作为采样段的背景值.)
 # v2.1: 修改了温度和过饱和度的计算方式, 采用平均值而非最后一个值.
-# 后续版本计划: v2.2, 增加数据质量控制步骤, 去除异常值(包括0值, SS_w<=4的值, 2024年9月17日之前未经验证的值)等; 增加一列"活化温度列"
+# v2.2, 增加数据质量控制步骤, 去除异常浓度值(包括0值和负值, SS_w<=4或SS_w>=6的值, 2024年9月17日之前未经验证的值)等; 增加"活化温度"列
+# 未来版本计划: v2.3, 增加对INP浓度的显著性检验(Schill et al., 2016; DeMott et al., 2017)
 
 import pandas as pd
 import numpy as np
@@ -13,7 +14,7 @@ from pathlib import Path
 # ======= 全局变量设置 =======
 
 TEMPERATURE = [-15, -20, -25, -30, -35] # 需要处理的温度列表, 单位: °C
-START_TIME = pd.to_datetime("2024-09-01 00:00:00") # 数据处理的起始时间, 包含在内
+START_TIME = pd.to_datetime("2024-09-17 00:00:00") # 数据处理的起始时间, 包含在内
 END_TIME = pd.to_datetime("2025-10-01 00:00:00") # 数据处理的结束时间, 包含在内
 CFDC_PATH = Path(r"D:\Coding\Data\Lanzhou_cfdc") # CFDC数据文件(csv格式)所在路径, 不包含子文件夹
 
@@ -151,6 +152,8 @@ def main():
             if not (START_TIME <= base_date <= END_TIME):
                 continue
             data = pd.read_csv(file, encoding='utf-8', encoding_errors='ignore').dropna(subset=['Lamina Average T [C]'])
+            if data.empty:
+                continue
             #### 确定日期
             seconds = pd.to_numeric(data['Time'], errors='coerce')# 把非数字变成 NaN (这行用于处理非utf-8编码时出现的异常)
             time = base_date + pd.to_timedelta(seconds, unit='s')
@@ -211,10 +214,25 @@ def main():
     df_inp = df_inp.sort_values('Date').reset_index(drop=True)
 
     # 质量控制
+    print(f"质量控制前, 点的数量: {df_inp.shape[0]}")
+
     # 1. 去除正的温度值
     df_inp = df_inp.where(df_inp['T_inp(°C)'] < 0).dropna()
+    print(f"去除正温度值后, 点的数量: {df_inp.shape[0]}")
 
-    # 2. 根据日期归属生成“季节”列
+    # 2. 去除非正的INP浓度值
+    df_inp = df_inp[df_inp['N_inp_net(#/L)'] > 0]
+    print(f"去除非正INP浓度值后, 点的数量: {df_inp.shape[0]}")
+    
+    # 3. 过饱和度控制在合理范围内 (4 < SS_w < 6)
+    df_inp = df_inp[(df_inp['SS_w'] > 4) & (df_inp['SS_w'] < 6)]
+    print(f"过饱和度控制后, 点的数量: {df_inp.shape[0]}")
+
+    # 4. 显著性检验: (仅占位, 后续版本补充)
+    df_inp = df_inp[df_inp['N_inp_net(#/L)'] > 0.1]
+    print(f"显著性检验后, 点的数量: {df_inp.shape[0]}")
+
+    # 5. 根据日期归属, 增加“季节”列
     def season_of_month(m):
         # 气象学季节：春3–5，夏6–8，秋9–11，冬12,1,2
         if m in [3,4,5]:
@@ -229,8 +247,24 @@ def main():
             return 'Unknown'
     df_inp['season'] = df_inp['Date'].dt.month.map(season_of_month)
 
+    # 6. 增加"活化温度"列
+    def activation_temperature(temp: pd.Series):
+        if abs(temp - (-15)) < 2.5:
+            return -15
+        elif abs(temp - (-20)) < 2.5:
+            return -20
+        elif abs(temp - (-25)) < 2.5:
+            return -25
+        elif abs(temp - (-30)) < 2.5:
+            return -30
+        elif abs(temp - (-35)) < 2.5:
+            return -35
+        else:
+            return np.nan
+    df_inp['T_a(°C)'] = df_inp['T_inp(°C)'].apply(activation_temperature)
+
     # 输出为CSV文件
-    df_inp.to_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.1.csv", index=False)
+    df_inp.to_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.2.csv", index=False)
 
 
 if __name__ == "__main__":
