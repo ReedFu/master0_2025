@@ -12,10 +12,10 @@ from pathlib import Path
 
 # ======= 全局变量设置 =======
 
-TEMPERATURE = [-15, -20, -25, -30, -35]
-START_TIME = pd.to_datetime("2024-09-01 00:00:00")
-END_TIME = pd.to_datetime("2025-10-01 00:00:00")
-CFDC_PATH = Path(r"D:\Coding\Data\Lanzhou_cfdc")
+TEMPERATURE = [-15, -20, -25, -30, -35] # 需要处理的温度列表, 单位: °C
+START_TIME = pd.to_datetime("2024-09-01 00:00:00") # 数据处理的起始时间, 包含在内
+END_TIME = pd.to_datetime("2025-10-01 00:00:00") # 数据处理的结束时间, 包含在内
+CFDC_PATH = Path(r"D:\Coding\Data\Lanzhou_cfdc") # CFDC数据文件(csv格式)所在路径, 不包含子文件夹
 
 # ==========================
 
@@ -23,7 +23,7 @@ def sum_by_consecutive_index(s: pd.Series) -> pd.Series:
     '''
     Docstring for sum_by_consecutive_index
     
-    :param s: Description: 输入的 Series 对象, 索引为整数, 有几小段连续的值, 但这几段之间不连续.
+    :param s: Description: 输入的 Series 对象, 索引为整数, 有几小段索引连续的值, 但这几段之间不连续. 例如, 索引为 [1,2,3,4,5,11,12,13,14,15] 的 Series.
     :type s: pd.Series
     :return: Description: 输出为 Series 对象, 将每段连续索引的值分组求和, 每组的索引为每段的终点索引.
     :rtype: Series[Any]
@@ -31,7 +31,7 @@ def sum_by_consecutive_index(s: pd.Series) -> pd.Series:
     #if s.empty:
         #return s.copy()
 
-    # 如果你的“连续=差1”是按索引递增来定义的，建议确保索引已排序
+    # 确保索引已排序
     # s = s.sort_index()
 
     tag = s.index.to_series().diff().ne(1).cumsum()
@@ -67,7 +67,7 @@ def mean_by_consecutive_index(s: pd.Series) -> pd.Series:
     '''
     Docstring for mean_by_consecutive_index
     
-    :param s: Description: 输入的 Series 对象, 索引为整数, 有几小段连续的值, 但这几段之间不连续.
+    :param s: Description: 输入的 Series 对象, 索引为整数, 有几小段索引连续的值, 但这几段之间不连续. 例如, 索引为 [1,2,3,4,5,11,12,13,14,15] 的 Series.
     :type s: pd.Series
     :return: Description: 输出为 Series 对象, 将每段连续索引的值分组求平均, 每组的索引为每段的终点索引.
     :rtype: Series[Any]
@@ -75,7 +75,7 @@ def mean_by_consecutive_index(s: pd.Series) -> pd.Series:
     #if s.empty:
         #return s.copy()
 
-    # 如果你的“连续=差1”是按索引递增来定义的，建议确保索引已排序
+    # 确保索引已排序
     # s = s.sort_index()
 
     tag = s.index.to_series().diff().ne(1).cumsum()
@@ -97,7 +97,6 @@ def compute_net(sam, bac):
     返回: Series 对象, 索引为采样(sample) Series 的索引.
 
     调用此函数前, 需要:
-    - import numpy as np
     - import pandas as pd
     """
     
@@ -164,20 +163,20 @@ def main():
             total_flow_bac = data['Total Mass Flow [SLPM]'][bac_toggle==True][data['Lamina T Set [C]']==temp]
             sheath_flow_bac = data['Sheath Mass Flow [SLPM]'][bac_toggle==True][data['Lamina T Set [C]']==temp]
             aerosol_flow_bac = total_flow_bac - sheath_flow_bac # unit: standard L per minute
-            count_bac = sum_by_consecutive_index(num_inp_bac)
-            count_bac = sum_with_next(count_bac)
-            vol_bac = sum_by_consecutive_index(aerosol_flow_bac) / 60  # standard L
-            vol_bac = sum_with_next(vol_bac)
-            conc_inp_bac = count_bac / vol_bac # unit: #/L(standard)
+
+            count_bac = sum_by_consecutive_index(num_inp_bac) # unit: # (per second)
+            vol_bac = sum_by_consecutive_index(aerosol_flow_bac) / 60  # standard L (per second) 
+            conc_inp_bac = sum_with_next(count_bac) / sum_with_next(vol_bac) # unit: #/standard L
 
             #### 再算采样段平均浓度: 计算这一天多个采样段的浓度, 每个采样段得到一个INP平均浓度, 保存于 Series 中
             num_inp_sam = data['INP Counts'][sam_toggle==True][data['Lamina T Set [C]']==temp]
             total_flow_sam = data['Total Mass Flow [SLPM]'][sam_toggle==True][data['Lamina T Set [C]']==temp]
             sheath_flow_sam = data['Sheath Mass Flow [SLPM]'][sam_toggle==True][data['Lamina T Set [C]']==temp]
             aerosol_flow_sam = total_flow_sam - sheath_flow_sam # unit: standard L per minute
-            count_sam = sum_by_consecutive_index(num_inp_sam)
-            vol_sam = sum_by_consecutive_index(aerosol_flow_sam) / 60  # standard L
-            conc_inp_sam = count_sam / vol_sam # unit: #/L(standard)
+
+            count_sam = sum_by_consecutive_index(num_inp_sam) # unit: # (per second)
+            vol_sam = sum_by_consecutive_index(aerosol_flow_sam) / 60  # standard L (per second) 
+            conc_inp_sam = count_sam / vol_sam # unit: #/standard L
 
             T_inp = data['Lamina Average T [C]'][sam_toggle==True][data['Lamina T Set [C]']==temp]
             T_inp = mean_by_consecutive_index(T_inp)
@@ -197,7 +196,7 @@ def main():
             #print(f"Processed file: {file.name}, INP_net count: {len(N_inp_avg_net)}")
             if len(N_inp_avg_net) != 0:
                 count += 1
-        print(f"There are {count} valid files with INP data.")
+        print(f"There are {count} valid files with INP{temp} data.")
 
     all_dates = pd.concat(all_dates, ignore_index=True)# 在这之后, 索引变得不重要了
     all_INP = pd.concat(all_INP, ignore_index=True)
