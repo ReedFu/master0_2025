@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # 将全年CFDC数据输出为单个CSV文件
-# 目前版本: v2.2
+# 目前版本: v2.3
 # 版本记录:
 # v2.0: 在v1.0的基础上, 修改了数据处理的思路, 实现: 采样段前后的背景段取平均, 作为这部分采样段的背景值. (如果仅有前背景段, 则取前背景段作为采样段的背景值.)
 # v2.1: 修改了温度和过饱和度的计算方式, 采用平均值而非最后一个值.
-# v2.2, 增加数据质量控制步骤, 去除异常浓度值(包括0值和负值, SS_w<=4或SS_w>=6的值, 2024年9月17日之前未经验证的值)等; 增加"活化温度"列
-# 未来版本计划: v2.3, 增加对INP浓度的显著性检验(Schill et al., 2016; DeMott et al., 2017)
+# v2.2, 增加数据质量控制步骤, 去除异常浓度值(包括0值和负值, SS_w<=4或SS_w>=6的值, 2024年9月17日之前未经验证的值)等; 增加"活化温度"列.
+# v2.3, 增加"总采样体积"列.
+# 未来版本计划: v2.4, 增加对INP浓度的显著性检验(Schill et al., 2016; DeMott et al., 2017).
 
 import pandas as pd
 import numpy as np
@@ -141,6 +142,7 @@ def main():
     all_T = []
     all_SS_w = []
     all_SS_i = []
+    all_vol = []
     for temp in TEMPERATURE:
         ## 可视化数据的提取与处理
         ### 处理INP数据
@@ -195,6 +197,7 @@ def main():
             all_T.append(T_inp[N_inp_avg_net.index])
             all_SS_w.append(SS_w[N_inp_avg_net.index])
             all_SS_i.append(SS_i[N_inp_avg_net.index])
+            all_vol.append(vol_sam[N_inp_avg_net.index])
             #### 输出文件名以及该文件处理后的INP数据点数量
             #print(f"Processed file: {file.name}, INP_net count: {len(N_inp_avg_net)}")
             if len(N_inp_avg_net) != 0:
@@ -210,7 +213,8 @@ def main():
         'N_inp_net(#/L)': all_INP,
         'T_inp(°C)': all_T
         ,'SS_w': all_SS_w
-        ,'SS_i': all_SS_i})
+        ,'SS_i': all_SS_i
+        ,'Total_Sampling_Volume(L)': all_vol})
     df_inp = df_inp.sort_values('Date').reset_index(drop=True)
 
     # 质量控制
@@ -264,7 +268,7 @@ def main():
     df_inp['T_a(°C)'] = df_inp['T_inp(°C)'].apply(activation_temperature)
 
     # 输出为CSV文件
-    df_inp.to_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.2.csv", index=False)
+    df_inp.to_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.3.csv", index=False)
 
 
 if __name__ == "__main__":
