@@ -169,8 +169,8 @@ def main():
             sheath_flow_bac = data['Sheath Mass Flow [SLPM]'][bac_toggle==True][data['Lamina T Set [C]']==temp]
             aerosol_flow_bac = total_flow_bac - sheath_flow_bac # unit: standard L per minute
 
-            count_bac = sum_by_consecutive_index(num_inp_bac) # unit: # (per second)
-            vol_bac = sum_by_consecutive_index(aerosol_flow_bac) / 60  # standard L (per second) 
+            count_bac = sum_by_consecutive_index(num_inp_bac) # unit of `num_inp_bac`: # (per second); unit of `count_bac`: #
+            vol_bac = sum_by_consecutive_index(aerosol_flow_bac) / 60  # unit of `aerosol_flow_bac`:standard L (per minute); unit of `vol_bac`: standard L
             conc_inp_bac = sum_with_next(count_bac) / sum_with_next(vol_bac) # unit: #/standard L
 
             #### 再算采样段平均浓度: 计算这一天多个采样段的浓度, 每个采样段得到一个INP平均浓度, 保存于 Series 中
@@ -179,8 +179,8 @@ def main():
             sheath_flow_sam = data['Sheath Mass Flow [SLPM]'][sam_toggle==True][data['Lamina T Set [C]']==temp]
             aerosol_flow_sam = total_flow_sam - sheath_flow_sam # unit: standard L per minute
 
-            count_sam = sum_by_consecutive_index(num_inp_sam) # unit: # (per second)
-            vol_sam = sum_by_consecutive_index(aerosol_flow_sam) / 60  # standard L (per second) 
+            count_sam = sum_by_consecutive_index(num_inp_sam) # unit of `num_inp_sam`: # (per second); unit of `count_sam`: #
+            vol_sam = sum_by_consecutive_index(aerosol_flow_sam) / 60  # unit of `aerosol_flow_sam`:standard L (per minute); unit of `vol_sam`: standard L
             conc_inp_sam = count_sam / vol_sam # unit: #/standard L
 
             T_inp = data['Lamina Average T [C]'][sam_toggle==True][data['Lamina T Set [C]']==temp]
