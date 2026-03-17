@@ -209,6 +209,7 @@ def main():
     all_T = pd.concat(all_T, ignore_index=True)
     all_SS_w = pd.concat(all_SS_w, ignore_index=True)
     all_SS_i = pd.concat(all_SS_i, ignore_index=True)
+    all_vol = pd.concat(all_vol, ignore_index=True)
     df_inp = pd.DataFrame({'Date': all_dates,
         'N_inp_net(#/L)': all_INP,
         'T_inp(°C)': all_T
