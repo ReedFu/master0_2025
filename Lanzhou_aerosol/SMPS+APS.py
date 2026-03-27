@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # 主要功能: 读取并合并 SMPS 和 APS 的粒径分布数据, 计算总表面积浓度, 并与大气冰核 (INP) 数据进行时间对齐和表面活性密度 (ns) 计算.
-# 目前版本: v1.0
+# 目前版本: v1.0.1
+# 版本记录:
+# v1.0.1: 更新 INP 数据集为 v2.4.1 版本, 修正了 INP 数据中的异常值, 提高了数据质量. 
 
 import pandas as pd
 import numpy as np
@@ -162,17 +164,16 @@ def merge_with_inp(surface_area_series: pd.Series, inp_csv_path: str, tolerance=
     sa_df.columns = ['Time_A', 'Total_Surface_Area(μm2/cm3)']
     sa_df['Time_A'] = pd.to_datetime(sa_df['Time_A'])
     
-    # merge_asof 必需对时间排序
+    # merge_asof 必须对时间排序
     df_inp = df_inp.sort_values('Date')
     sa_df = sa_df.sort_values('Time_A')
     
-    # 按照 tolerance (默认1小时) 将 INP 数据对齐表面积数据
     result = pd.merge_asof(
         df_inp, sa_df, left_on='Date', right_on='Time_A',
         direction='nearest', tolerance=pd.Timedelta(tolerance)
     )
     
-    # 结算 ns 参数 (unit: # / m^2)
+    # 计算 ns 参数 (unit: # / m^2)
     result['n_s'] = result['N_inp_net(#/L)'] / result['Total_Surface_Area(μm2/cm3)'] * 1e9
     return result
 
@@ -217,9 +218,9 @@ def process_aerosol_data(config: dict):
     out_dir = Path(config["OUT_DIR"])
     out_dir.mkdir(parents=True, exist_ok=True)
     
-    final_psd_df.to_csv(out_dir / "final_psd(v1.0).csv")
-    inp_result.to_csv(out_dir / "INP+ns(v1.0).csv", index=False)
-    status_df.to_csv(out_dir / "instrument_status(v1.0).csv", index=False)
+    final_psd_df.to_csv(out_dir / "final_psd(v1.0.1).csv")
+    inp_result.to_csv(out_dir / "INP+ns(v1.0.1).csv", index=False)
+    status_df.to_csv(out_dir / "instrument_status(v1.0.1).csv", index=False)
     
     print(f"💾 数据已成功输出到目录: {out_dir}")
 
@@ -229,7 +230,7 @@ if __name__ == "__main__":
     CONFIG = {
         "SMPS_DIR": r"D:\Coding\Data\Lanzhou_aerosol\SMPS_dNdlogDp",
         "APS_DIR":  r"D:\Coding\Data\Lanzhou_aerosol\APS_dNdlogDp",
-        "INP_CSV":  r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.3.csv",
+        "INP_CSV":  r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.4.1.csv",
         "OUT_DIR":  r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS",
         
         # 预处理相关参数
