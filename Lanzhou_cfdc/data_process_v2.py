@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 # 将全年CFDC数据输出为单个CSV文件
-# 目前版本: v2.4
+# 目前版本: v2.4.1
 # 版本记录:
 # v2.0: 在v1.0的基础上, 修改了数据处理的思路, 实现: 采样段前后的背景段取平均, 作为这部分采样段的背景值. (如果仅有前背景段, 则取前背景段作为采样段的背景值.)
 # v2.1: 修改了温度和过饱和度的计算方式, 采用平均值而非最后一个值.
-# v2.2, 增加数据质量控制步骤, 去除异常浓度值(包括0值和负值, SS_w<=4或SS_w>=6的值, 2024年9月17日之前未经验证的值)等; 增加"活化温度"列.
-# v2.3, 增加"总采样体积"列, 对INP浓度进行初步的显著性检验(剔除INP浓度小于0.1 #/L的值).
-# v2.4, 增加对 INP 浓度的显著性检验(Schill et al., 2016; DeMott et al., 2017): 1. 根据泊松分布计算采样段和背景段的 INP 浓度的标准差; 2. 两标准差的平方和作为 INP 净浓度的误差; 3. 大于 INP 净浓度误差的 1.64 倍才认为是显著的数据点(Z statistic at 95% confidence).
+# v2.2: 增加数据质量控制步骤, 去除异常浓度值(包括0值和负值, SS_w<=4或SS_w>=6的值, 2024年9月17日之前未经验证的值)等; 增加"活化温度"列.
+# v2.3: 增加"总采样体积"列, 对INP浓度进行初步的显著性检验(剔除INP浓度小于0.1 #/L的值).
+# v2.4: 增加对 INP 浓度的显著性检验(Schill et al., 2016; DeMott et al., 2017): 1. 根据泊松分布计算采样段和背景段的 INP 浓度的标准差; 2. 两标准差的平方和作为 INP 净浓度的误差; 3. 大于 INP 净浓度误差的 1.64 倍才认为是显著的数据点(Z statistic at 95% confidence).
+# v2.4.1: 在数据处理流程末尾去除异常值, 提高数据质量.
 
 import pandas as pd
 import numpy as np
@@ -317,8 +318,12 @@ def main():
             return np.nan
     df_inp['T_a(°C)'] = df_inp['T_inp(°C)'].apply(activation_temperature)
 
+    # 去除215行和265行(浓度异常大, 暂且这样处理, 之后可以再检查一下原始数据)
+    df_inp = df_inp.reset_index(drop=True)
+    df_inp = df_inp.drop(index=[213, 263]).reset_index(drop=True)
+
     # 输出为CSV文件
-    df_inp.to_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.4.csv", index=False)
+    df_inp.to_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.4.1.csv", index=False)
 
 
 if __name__ == "__main__":
