@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # 将全年CFDC数据输出为单个CSV文件
-# 目前版本: v2.4.1
+# 目前版本: v2.4.2
 # 版本记录:
 # v2.0: 在v1.0的基础上, 修改了数据处理的思路, 实现: 采样段前后的背景段取平均, 作为这部分采样段的背景值. (如果仅有前背景段, 则取前背景段作为采样段的背景值.)
 # v2.1: 修改了温度和过饱和度的计算方式, 采用平均值而非最后一个值.
@@ -8,6 +8,7 @@
 # v2.3: 增加"总采样体积"列, 对INP浓度进行初步的显著性检验(剔除INP浓度小于0.1 #/L的值).
 # v2.4: 增加对 INP 浓度的显著性检验(Schill et al., 2016; DeMott et al., 2017): 1. 根据泊松分布计算采样段和背景段的 INP 浓度的标准差; 2. 两标准差的平方和作为 INP 净浓度的误差; 3. 大于 INP 净浓度误差的 1.64 倍才认为是显著的数据点(Z statistic at 95% confidence).
 # v2.4.1: 在数据处理流程末尾去除异常值, 提高数据质量.
+# v2.4.2: 修改部分列名和单位.
 
 import pandas as pd
 import numpy as np
@@ -259,25 +260,25 @@ def main():
     all_vol = pd.concat(all_vol, ignore_index=True)
     all_sig_level = pd.concat(all_sig_level, ignore_index=True)
     all_significant = pd.concat(all_significant, ignore_index=True)
-    df_inp = pd.DataFrame({'Date': all_dates,
-        'N_inp_net(#/L)': all_INP,
-        'T_inp(°C)': all_T
+    df_inp = pd.DataFrame({'Time': all_dates,
+        'N_INP(#/L)': all_INP,
+        'T_INP(degC)': all_T
         ,'SS_w': all_SS_w
         ,'SS_i': all_SS_i
         ,'Total_Sampling_Volume(L)': all_vol
         ,'Significance_Level(#/L)': all_sig_level
         ,'Is_Significant': all_significant})
-    df_inp = df_inp.sort_values('Date').reset_index(drop=True)
+    df_inp = df_inp.sort_values('Time').reset_index(drop=True)
 
     # 质量控制
     print(f"质量控制前, 点的数量: {df_inp.shape[0]}")
 
     # 1. 去除正的温度值
-    df_inp = df_inp.where(df_inp['T_inp(°C)'] < 0).dropna()
+    df_inp = df_inp.where(df_inp['T_INP(degC)'] < 0).dropna()
     print(f"去除正温度值后, 点的数量: {df_inp.shape[0]}")
 
     # 2. 去除非正的INP浓度值
-    df_inp = df_inp[df_inp['N_inp_net(#/L)'] > 0]
+    df_inp = df_inp[df_inp['N_INP(#/L)'] > 0]
     print(f"去除非正INP浓度值后, 点的数量: {df_inp.shape[0]}")
     
     # 3. 过饱和度控制在合理范围内 (4 < SS_w < 6)
@@ -300,7 +301,7 @@ def main():
             return 'Winter'
         else:
             return 'Unknown'
-    df_inp['season'] = df_inp['Date'].dt.month.map(season_of_month)
+    df_inp['Season'] = df_inp['Time'].dt.month.map(season_of_month)
 
     # 6. 增加"活化温度"列
     def activation_temperature(temp: pd.Series):
@@ -316,14 +317,14 @@ def main():
             return -35
         else:
             return np.nan
-    df_inp['T_a(°C)'] = df_inp['T_inp(°C)'].apply(activation_temperature)
+    df_inp['T_a(degC)'] = df_inp['T_INP(degC)'].apply(activation_temperature)
 
     # 去除215行和265行(浓度异常大, 暂且这样处理, 之后可以再检查一下原始数据)
     df_inp = df_inp.reset_index(drop=True)
     df_inp = df_inp.drop(index=[213, 263]).reset_index(drop=True)
 
     # 输出为CSV文件
-    df_inp.to_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.4.1.csv", index=False)
+    df_inp.to_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.4.2.csv", index=False)
 
 
 if __name__ == "__main__":
