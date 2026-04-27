@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # 主要功能: 读取并合并 SMPS 和 APS 的粒径分布数据, 计算总表面积浓度, 并与大气冰核 (INP) 数据进行时间对齐和表面活性密度 (ns) 计算.
-# 目前版本: v1.0.1
+# 目前版本: v1.0.1(SP)
 # 版本记录:
 # v1.0.1: 更新 INP 数据集为 v2.4.1 版本, 修正了 INP 数据中的异常值, 提高了数据质量. 
+# v1.0.1(special version, SP): `MAX_APS_DP` 参数调整为 20000 nm, 以包含更大粒径范围的 APS 数据, 便于绘制气溶胶粒子谱分布.
 
 import pandas as pd
 import numpy as np
@@ -218,9 +219,9 @@ def process_aerosol_data(config: dict):
     out_dir = Path(config["OUT_DIR"])
     out_dir.mkdir(parents=True, exist_ok=True)
     
-    final_psd_df.to_csv(out_dir / "final_psd(v1.0.1).csv")
-    inp_result.to_csv(out_dir / "INP+ns(v1.0.1).csv", index=False)
-    status_df.to_csv(out_dir / "instrument_status(v1.0.1).csv", index=False)
+    final_psd_df.to_csv(out_dir / "final_psd(MAX_APS_DP=2w).csv")
+    inp_result.to_csv(out_dir / "INP+ns(MAX_APS_DP=2w).csv", index=False)
+    status_df.to_csv(out_dir / "instrument_status(MAX_APS_DP=2w).csv", index=False)
     
     print(f"💾 数据已成功输出到目录: {out_dir}")
 
@@ -236,7 +237,7 @@ if __name__ == "__main__":
         # 预处理相关参数
         "RESAMPLE_FREQ": '10min',        # 重采样频次
         "RHO_EFF": 1.5,                  # 气溶胶假设有效密度(g/cm3)
-        "MAX_APS_DP": 2500,              # APS 允许最大粒径(nm)
+        "MAX_APS_DP": 20000,              # APS 允许最大粒径(nm)
         
         # SMPS 需要剔除浓度异常的阶段 (起止时间对)
         "SMPS_BAD_PERIODS": [
