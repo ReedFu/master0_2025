@@ -1,4 +1,6 @@
-from tkinter import NO
+# Draw a heatmap of the correlation coefficient between INP and chemical element mass concentration in batches.
+# 批量绘制INP数浓度与化学元素质量浓度之间相关系数的热力图.
+# Current version: v1.0
 
 import numpy as np
 import pandas as pd
