@@ -17,17 +17,19 @@ plt.rcParams['mathtext.it'] = 'Times New Roman'
 # 提取粒径区间列名，并将其转换为浮点数，作为 X 轴坐标
 final_psd_df = pd.read_csv(r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS\final_psd(MAX_APS_DP=2w).csv", index_col=0, parse_dates=True)
 status_df = pd.read_csv(r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS\instrument_status(MAX_APS_DP=2w).csv", index_col=0, parse_dates=True)
-inp_df = pd.read_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.4.1.csv", index_col=0, parse_dates=True)
+inp_df = pd.read_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.4.2.csv", index_col=0, parse_dates=True)
 
+inp_df = inp_df[inp_df['Is_Significant'] == True]
 df= pd.merge_asof(inp_df, final_psd_df, left_index=True, right_index=True, direction='nearest', tolerance=pd.Timedelta('1h'))
 
 size_columns = df.columns[9:]
+print("粒径区间列名:", size_columns)
 diameters = np.array([float(col) for col in size_columns])
 
 # 计算均值
-seasonal_mean = df.groupby('season')[size_columns].mean()
+seasonal_mean = df.groupby('Season')[size_columns].mean()
 # 计算标准差
-seasonal_std = df.groupby('season')[size_columns].std()
+seasonal_std = df.groupby('Season')[size_columns].std()
 
 season_styles = {
     'Spring': {'color': '#2ca02c', 'label': 'Spring', 'linestyle': '-'},
