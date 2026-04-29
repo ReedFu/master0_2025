@@ -33,6 +33,11 @@ def format_species_name(name):
     name = name.replace('HNO3', 'HNO$_3$')
     name = name.replace('SO2', 'SO$_2$')
     name = name.replace('HNO2', 'HNO$_2$')
+    name = name.replace('n_s', 'n$_s$')
+    name = name.replace('N_10-500nm', 'N$_{10-500nm}$')
+    name = name.replace('N_10-1000nm', 'N$_{10-1000nm}$')
+    name = name.replace('N_500-2500nm', 'N$_{500-2500nm}$')
+    name = name.replace('N_1000-2500nm', 'N$_{1000-2500nm}$')
     return name
 
 def calculate_corr_and_p(df, log_before_calculate=True):
@@ -149,7 +154,7 @@ if __name__ == "__main__":
     configure_plot_style()
     
     # 2. 读取数据
-    df_data = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\Corr(INP_vs_element).csv")
+    df_data = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\Corr_heatmap.csv")
     
     # 3. 计算相关系数和P值矩阵
     TEMPERATURE_LIST = [-35, -30, -25, -20, -15]
