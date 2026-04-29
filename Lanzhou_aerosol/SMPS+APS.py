@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 # 主要功能: 读取并合并 SMPS 和 APS 的粒径分布数据, 计算总表面积浓度, 并与大气冰核 (INP) 数据进行时间对齐和表面活性密度 (ns) 计算.
-# 目前版本: v1.0.1(SP)
+# 目前版本: v1.0.2
 # 版本记录:
 # v1.0.1: 更新 INP 数据集为 v2.4.1 版本, 修正了 INP 数据中的异常值, 提高了数据质量. 
 # v1.0.1(special version, SP): `MAX_APS_DP` 参数调整为 20000 nm, 以包含更大粒径范围的 APS 数据, 便于绘制气溶胶粒子谱分布.
+# v1.0.2: 更新 INP 数据集为 v2.4.1 版本(修改部分列名和单位).
 
 import pandas as pd
 import numpy as np
@@ -159,23 +160,23 @@ def get_instrument_status(combined_df: pd.DataFrame, missing_threshold=0.9) -> p
 def merge_with_inp(surface_area_series: pd.Series, inp_csv_path: str, tolerance='1h') -> pd.DataFrame:
     """将总表面积与 INP (冰核粒子) 的时间数据配准，并计算 ns 值"""
     df_inp = pd.read_csv(inp_csv_path)
-    df_inp['Date'] = pd.to_datetime(df_inp['Date'])
+    df_inp['Time'] = pd.to_datetime(df_inp['Time'])
     
     sa_df = surface_area_series.to_frame().reset_index()
     sa_df.columns = ['Time_A', 'Total_Surface_Area(μm2/cm3)']
     sa_df['Time_A'] = pd.to_datetime(sa_df['Time_A'])
     
     # merge_asof 必须对时间排序
-    df_inp = df_inp.sort_values('Date')
+    df_inp = df_inp.sort_values('Time')
     sa_df = sa_df.sort_values('Time_A')
     
     result = pd.merge_asof(
-        df_inp, sa_df, left_on='Date', right_on='Time_A',
+        df_inp, sa_df, left_on='Time', right_on='Time_A',
         direction='nearest', tolerance=pd.Timedelta(tolerance)
     )
     
     # 计算 ns 参数 (unit: # / m^2)
-    result['n_s'] = result['N_inp_net(#/L)'] / result['Total_Surface_Area(μm2/cm3)'] * 1e9
+    result['n_s'] = result['N_INP(#/L)'] / result['Total_Surface_Area(μm2/cm3)'] * 1e9
     return result
 
 # ==========================================
@@ -219,9 +220,9 @@ def process_aerosol_data(config: dict):
     out_dir = Path(config["OUT_DIR"])
     out_dir.mkdir(parents=True, exist_ok=True)
     
-    final_psd_df.to_csv(out_dir / "final_psd(MAX_APS_DP=2w).csv")
-    inp_result.to_csv(out_dir / "INP+ns(MAX_APS_DP=2w).csv", index=False)
-    status_df.to_csv(out_dir / "instrument_status(MAX_APS_DP=2w).csv", index=False)
+    final_psd_df.to_csv(out_dir / "final_psd(v1.0.2).csv")
+    inp_result.to_csv(out_dir / "INP+ns(v1.0.2).csv", index=False)
+    status_df.to_csv(out_dir / "instrument_status(v1.0.2).csv", index=False)
     
     print(f"💾 数据已成功输出到目录: {out_dir}")
 
@@ -231,13 +232,13 @@ if __name__ == "__main__":
     CONFIG = {
         "SMPS_DIR": r"D:\Coding\Data\Lanzhou_aerosol\SMPS_dNdlogDp",
         "APS_DIR":  r"D:\Coding\Data\Lanzhou_aerosol\APS_dNdlogDp",
-        "INP_CSV":  r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.4.1.csv",
+        "INP_CSV":  r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.4.2.csv",
         "OUT_DIR":  r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS",
         
         # 预处理相关参数
         "RESAMPLE_FREQ": '10min',        # 重采样频次
         "RHO_EFF": 1.5,                  # 气溶胶假设有效密度(g/cm3)
-        "MAX_APS_DP": 20000,              # APS 允许最大粒径(nm)
+        "MAX_APS_DP": 2500,              # APS 允许最大粒径(nm)
         
         # SMPS 需要剔除浓度异常的阶段 (起止时间对)
         "SMPS_BAD_PERIODS": [
