@@ -107,23 +107,19 @@ def plot_correlation_heatmap(corr_matrix, p_matrix, output_path='correlation_hea
                 annot_kws={"size": 7, "family": "Times New Roman"}, 
                 cbar_kws={"shrink": 0.8}, 
                 ax=ax, 
-                linewidths=0.5,       # 格子之间的基础灰线宽度
+                linewidths=0.5,
                 linecolor='gray')
     
-    # 遍历下三角，如果 p < 0.05 则绘制加粗边框
+    # 遍历下三角，如果 p < 0.05 则在格子右上角添加显著性标记
     n_rows, n_cols = corr_matrix.shape
     for i in range(n_rows):
         for j in range(i): # 只遍历下三角
             p_val = p_matrix.iloc[i, j]
             if not np.isnan(p_val) and p_val < 0.05:
-                # 绘制矩形：左下角坐标为(j, i)，宽1，高1
-                rect = patches.Rectangle((j, i), 1, 1, 
-                                         fill=False, 
-                                         edgecolor='black', 
-                                         linewidth=1.8,   # 边框加粗
-                                         zorder=10)       # 保证框画在最顶层
-                ax.add_patch(rect)
-                
+                star = '*'
+                ax.text(j + 0.9, i + 0.25, star,
+                        ha='center', va='center', fontsize=12, fontfamily='Times New Roman')
+    
     # 调整X、Y轴标签字体和旋转角度
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, horizontalalignment='right', 
                        fontname='Times New Roman', size=9)
