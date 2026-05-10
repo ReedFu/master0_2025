@@ -102,7 +102,15 @@ def clean_and_sort_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df[num_cols].reindex(sorted(num_cols), axis=1)
 
 def convert_aps_to_dm(aps_df: pd.DataFrame, rho_eff=1.5, rho_0=1.0, x=1.0) -> pd.DataFrame:
-    """将 APS 空气动力学直径(Da) 转换为 电迁移率直径(Dm), 并修正单位为 nm"""
+    """
+    将 APS 空气动力学直径(Da) 转换为 电迁移率直径(Dm), 并修正单位为 nm
+    
+    rho_eff: 假设的有效密度 (g/cm3)
+
+    rho_0: 标准密度 (1.0 g/cm3)
+
+    x: 形状修正因子 (shape factor = 1.0, 表示球形粒子)
+    """
     # 如果检测到第一个数值小于 20, 视作单位是微米(μm), 则转换为纳米(nm)
     if float(aps_df.columns[0]) < 20:
         aps_df.columns = [float(c) * 1000 for c in aps_df.columns]
