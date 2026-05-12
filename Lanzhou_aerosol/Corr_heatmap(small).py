@@ -2,8 +2,8 @@ import pandas as pd
 import scipy.stats as stats
 import numpy as np
 
-df_merged = pd.read_csv(r"E:\Coding\Data\Lanzhou_chemical\Corr_heatmap.csv")
-df_source = pd.read_csv(r"E:\Coding\Data\Lanzhou_chemical\source_contrib_clean.csv")
+df_merged = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\Corr_heatmap.csv")
+df_source = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\PMF Processed\source_contrib_clean.csv")
 
 df_merged['Time'] = pd.to_datetime(df_merged['Time'])
 df_source['Time'] = pd.to_datetime(df_source['Time'])
@@ -118,7 +118,7 @@ for season in ['Winter', 'Spring', 'Summer', 'Autumn']:
 df_result = pd.DataFrame(results).T 
 
 # 保存为一个 CSV 文件, 每个季节一行
-output_filename = r'E:\Coding\Data\Lanzhou_chemical\Pearson_Correlation_Matrix.csv'
+output_filename = r'D:\Coding\Data\Lanzhou_chemical\Pearson_Correlation_Matrix.csv'
 df_result.to_csv(output_filename, index=True)
 print(f"\n结果已保存至: {output_filename}")
 
@@ -138,7 +138,7 @@ plt.rcParams['mathtext.it'] = 'Times New Roman'
 # ==========================================
 # 2. 读取和预处理数据
 # ==========================================
-df = pd.read_csv(r'E:\Coding\Data\Lanzhou_chemical\Pearson_Correlation_Matrix.csv', index_col=0)
+df = pd.read_csv(r'D:\Coding\Data\Lanzhou_chemical\Pearson_Correlation_Matrix.csv', index_col=0)
 
 # 分离用于颜色的纯数值矩阵 和 用于显示的文本标签矩阵
 annot_df = df.copy() # 用于显示 (包含星号)
@@ -189,6 +189,5 @@ ax.set_ylabel('')
 ax.set_title('Pearson Correlation Coefficients (n$_s$(-30$^{\circ}C$) vs. Elements)', fontsize=14, pad=20)
 plt.tight_layout()
 
-plt.savefig(r'E:\Coding\master0_2025\Thesis\Pearson_Heatmap(n_s_vs_elements).png', dpi=500, bbox_inches='tight')
-print("\n热力图已保存至: E:\\Coding\\master0_2025\\Thesis\\Pearson_Heatmap(n_s_vs_elements).png")
-#plt.show()
+plt.savefig(r'D:\Coding\master0_2025\Thesis\Pearson_Heatmap(n_s_vs_elements).png', dpi=500, bbox_inches='tight')
+print("\n热力图已保存至: D:\\Coding\\master0_2025\\Thesis\\Pearson_Heatmap(n_s_vs_elements).png")
