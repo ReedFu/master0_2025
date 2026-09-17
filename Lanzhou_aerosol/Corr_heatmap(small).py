@@ -16,7 +16,7 @@ df_merged = pd.merge_asof(
 	direction="nearest",
 	tolerance=pd.Timedelta("1h")
 )
-
+df_merged.to_csv(r"D:\Coding\Data\Lanzhou_chemical\Corr_heatmap_merged.csv", index=False)
 TARGET_TEMP = -30
 
 ELEMENT_LIST = [
@@ -41,9 +41,9 @@ ELEMENT_LIST = [
     "N_1000-2500nm",
 ]
 
-INP_COL = "n_s"
+INP_COL = "N_INP(#/L)"
 
-LOG_TAG = 1
+LOG_TAG = 0
 
 
 def calculate_corr_cell(df, temp, element, log_tag):
@@ -186,8 +186,8 @@ plt.yticks(rotation=0)
 # 隐藏横纵坐标的标题名（如果不想要原来的 index/columns 名称）
 ax.set_xlabel('')
 ax.set_ylabel('')
-ax.set_title('Pearson Correlation Coefficients (n$_s$(-30$^{\circ}C$) vs. Elements)', fontsize=14, pad=20)
+ax.set_title('Pearson Correlation Coefficients ([INP]$_{-30}$ vs. Elements)', fontsize=14, pad=20)
 plt.tight_layout()
 
-plt.savefig(r'D:\Coding\master0_2025\Thesis\Pearson_Heatmap(n_s_vs_elements).png', dpi=500, bbox_inches='tight')
-print("\n热力图已保存至: D:\\Coding\\master0_2025\\Thesis\\Pearson_Heatmap(n_s_vs_elements).png")
+plt.savefig(r'D:\Coding\master0_2025\Thesis\Pearson_Heatmap(INP_vs_elements).png', dpi=500, bbox_inches='tight')
+print("\n热力图已保存至: D:\\Coding\\master0_2025\\Thesis\\Pearson_Heatmap(INP_vs_elements).png")
