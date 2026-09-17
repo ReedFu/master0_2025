@@ -38,6 +38,11 @@ def format_species_name(name):
     name = name.replace('N_10-1000nm', 'N$_{10-1000nm}$')
     name = name.replace('N_500-2500nm', 'N$_{500-2500nm}$')
     name = name.replace('N_1000-2500nm', 'N$_{1000-2500nm}$')
+    name = name.replace('OC(optical)', 'OC')
+    name = name.replace('EC(optical)', 'EC')
+    #name = name.replace('Mineral dust', 'MD')
+    #name = name.replace('Vehicle emissions', 'VE')
+    #name = name.replace('Secondary formation', 'SF')
     return name
 
 def calculate_corr_and_p(df, log_before_calculate=True):
@@ -104,7 +109,7 @@ def plot_correlation_heatmap(corr_matrix, p_matrix, output_path='correlation_hea
                 square=True, 
                 annot=True, 
                 fmt=".2f", 
-                annot_kws={"size": 7, "family": "Times New Roman"}, 
+                annot_kws={"size": 20, "family": "Times New Roman"}, 
                 cbar_kws={"shrink": 0.8}, 
                 ax=ax, 
                 linewidths=0.5,
@@ -118,22 +123,22 @@ def plot_correlation_heatmap(corr_matrix, p_matrix, output_path='correlation_hea
             if not np.isnan(p_val) and p_val < 0.05:
                 star = '*'
                 ax.text(j + 0.9, i + 0.25, star,
-                        ha='center', va='center', fontsize=12, fontfamily='Times New Roman')
+                        ha='center', va='center', fontsize=20, fontfamily='Times New Roman')
     
     # 调整X、Y轴标签字体和旋转角度
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45, horizontalalignment='right', 
-                       fontname='Times New Roman', size=9)
+                       fontname='Times New Roman', size=20)
     ax.set_yticklabels(ax.get_yticklabels(), rotation=0, 
-                       fontname='Times New Roman', size=9)
+                       fontname='Times New Roman', size=20)
     
     # 调整 Colorbar 字体
     cbar = ax.collections[0].colorbar
-    cbar.ax.tick_params(labelsize=10)
+    cbar.ax.tick_params(labelsize=20)
     for t in cbar.ax.get_yticklabels():
         t.set_fontname('Times New Roman')
         
     # 设置标题
-    plt.title(f"INP$_{{{temp}}}$({season}) vs. Elements Correlation Heatmap", 
+    plt.title(f"INP$_{{{target_temp}}}$({season}) vs. Elements Correlation Heatmap", 
               fontdict={'family': 'Times New Roman', 'size': 20, 'weight': 'bold'}, 
               pad=20)
     
@@ -142,6 +147,49 @@ def plot_correlation_heatmap(corr_matrix, p_matrix, output_path='correlation_hea
     plt.savefig(output_path, bbox_inches='tight', facecolor='white')
     print(f"热力图已保存至: {output_path}")
 
+def plot_scatter(df, x_col, y_col, season, output_path='scatter_plot.png'):
+    """
+    绘制两个物质的散点图，并在图中显示 Pearson 相关系数和 P 值。
+    """
+    # 过滤有效数据
+    df_clean = df[[x_col, y_col]].dropna()
+    
+    # 计算相关系数和P值
+    if len(df_clean) < 3 or np.var(df_clean[x_col]) == 0 or np.var(df_clean[y_col]) == 0:
+        r, p = np.nan, np.nan
+    else:
+        r, p = pearsonr(df_clean[x_col], df_clean[y_col])
+    
+    # 创建散点图
+    fig , ax = plt.subplots(figsize=(8, 6), dpi=300)
+    ax.scatter(df_clean[x_col], df_clean[y_col], alpha=0.7)
+    
+    # 添加标题和标签
+    ax.set_title(f"{season}", 
+                 fontdict={'family': 'Times New Roman', 'size': 16})
+    ax.set_xlabel(format_species_name(x_col) + ' ($\mu g/m^3$)', fontname='Times New Roman', fontsize=14)
+    ax.set_ylabel(format_species_name(y_col) + ' ($\mu g/m^3$)', fontname='Times New Roman', fontsize=14)
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    
+    # 显示相关系数和P值
+    if np.isnan(r) or np.isnan(p):
+        ax.text(0.05, 0.95, "Pearson r = NaN\np = NaN", 
+                transform=ax.transAxes, 
+                fontsize=12, verticalalignment='top', fontname='Times New Roman')
+    elif p < 0.05:
+        ax.text(0.05, 0.95, f"Pearson r = {r:.2f}\np < 0.05", 
+                transform=ax.transAxes, 
+                fontsize=12, verticalalignment='top', fontname='Times New Roman')
+    else:
+        ax.text(0.05, 0.95, f"Pearson r = {r:.2f}\np > 0.05", 
+                transform=ax.transAxes, 
+                fontsize=12, verticalalignment='top', fontname='Times New Roman')
+    
+    # 紧凑布局并保存
+    plt.tight_layout()
+    plt.savefig(output_path, bbox_inches='tight', facecolor='white')
+    print(f"散点图已保存至: {output_path}")
 # ==========================================
 # 主程序入口
 # ==========================================
@@ -150,20 +198,46 @@ if __name__ == "__main__":
     configure_plot_style()
     
     # 2. 读取数据
-    df_data = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\Corr_heatmap.csv")
+    df_data = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\Corr_heatmap_merged.csv")
     
     # 3. 计算相关系数和P值矩阵
-    TEMPERATURE_LIST = [-35, -30, -25, -20, -15]
+    # TEMPERATURE_LIST = [-35, -30, -25, -20, -15]
+    target_temp = -30
+    
+    temp_mask = df_data['T_a(degC)'] == target_temp
+    for season in ['Spring', 'Summer', 'Autumn', 'Winter']:
+        season_mask = df_data['Season'] == season
 
-    for temp in TEMPERATURE_LIST:
-        temp_mask = df_data['T_a(degC)'] == temp
-        for season in ['Spring', 'Summer', 'Autumn', 'Winter']:
-            season_mask = df_data['Season'] == season
+        df_data_masked = df_data[temp_mask & season_mask].copy()
+        colnames_to_keep = [
+            "N_INP(#/L)",
+            "n_s",
+            "Mineral dust",
+            "Vehicle emissions",
+            "Secondary formation",
+            "OC(optical)",
+            "EC(optical)",
+            "Ba",
+            "Cu",
+            "Ca",
+            "K",
+            "Si",
+            "Mn",
+            "Fe",
+            "NH4+",
+            "SO42-",
+            "NO3-",
+            "N_10-500nm",
+            "N_10-1000nm",
+            "N_500-2500nm",
+            "N_1000-2500nm",
+        ]
+        df_data_masked = df_data_masked[colnames_to_keep]
 
-            df_data_masked = df_data[temp_mask & season_mask].copy()
-            colnames_to_remove = ['T_a(degC)', 'datetime', 'Time', 'Season', 'Hg', 'Mo', 'Sc', 'Br', 'Te', 'Cs', 'Nb']
-            df_data_masked.drop(columns=colnames_to_remove, inplace=True, errors='ignore')
+        corr_df, p_df = calculate_corr_and_p(df_data_masked, log_before_calculate=False)
+        # 4. 制图与输出
+        plot_correlation_heatmap(corr_df, p_df, output_path=fr'D:\Coding\master0_2025\Thesis\Correlation_Heatmap_{target_temp}degC_{season}.png')
 
-            corr_df, p_df = calculate_corr_and_p(df_data_masked, log_before_calculate=True)
-            # 4. 制图与输出
-            plot_correlation_heatmap(corr_df, p_df, output_path=fr'D:\Coding\master0_2025\Lanzhou_aerosol\Correlation_Heatmap_{temp}degC_{season}.png')
+        # 选取两个感兴趣的物质进行散点图绘制
+        # 例如: Mineral dust vs. Secondary formation
+        plot_scatter(df_data_masked, 'Mineral dust', 'Secondary formation', season, output_path=fr'D:\Coding\master0_2025\Thesis\Scatter_MineralDust_SecondaryFormation_{target_temp}degC_{season}.png')
