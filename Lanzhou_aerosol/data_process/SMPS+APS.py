@@ -4,7 +4,8 @@
 # 版本记录:
 # v1.0.1: 更新 INP 数据集为 v2.4.1 版本, 修正了 INP 数据中的异常值, 提高了数据质量. 
 # v1.0.1(special version, SP): `MAX_APS_DP` 参数调整为 20000 nm, 以包含更大粒径范围的 APS 数据, 便于绘制气溶胶粒子谱分布.
-# v1.0.2: 更新 INP 数据集为 v2.4.1 版本(修改部分列名和单位).
+# v1.0.2: 更新 INP 数据集为 v2.4.2 版本(修改部分列名和单位).
+# v1.0.3: 修改了列名`n_s`为`n_s(#/m2)`, 以明确单位; 增加部分注释
 
 import pandas as pd
 import numpy as np
@@ -143,7 +144,7 @@ def calculate_surface_area(df: pd.DataFrame) -> pd.Series:
     dp_nm = np.array(df.columns.astype(float))
     dp_um = dp_nm / 1000.0
     
-    # 计算 dlogDp (大多数仪器粒径对数等距)
+    # 计算 dlogDp 
     log_dp = np.log10(dp_nm)
     delta_log_dp = np.zeros_like(log_dp)
     delta_log_dp[:-1] = np.diff(log_dp)
@@ -184,7 +185,7 @@ def merge_with_inp(surface_area_series: pd.Series, inp_csv_path: str, tolerance=
     )
     
     # 计算 ns 参数 (unit: # / m^2)
-    result['n_s'] = result['N_INP(#/L)'] / result['Total_Surface_Area(μm2/cm3)'] * 1e9
+    result['n_s(#/m2)'] = result['N_INP(#/L)'] / result['Total_Surface_Area(μm2/cm3)'] * 1e9
     return result
 
 # ==========================================
@@ -214,11 +215,11 @@ def process_aerosol_data(config: dict):
     aps_res = convert_aps_to_dm(aps_res, rho_eff=config["RHO_EFF"])
     
     # 5. 合并组装宽表
-    final_psd_df = merge_smps_aps(smps_res, aps_res, max_aps_dp=config["MAX_APS_DP"])
+    final_psd_df = merge_smps_aps(smps_res, aps_res, max_aps_dp=config["MAX_APS_DP"]) # dN/dlogDp (#/cm3)(perhaps)
     print(f"✅ 合并完成！粒径范围: {final_psd_df.columns.min():.2f} nm ~ {final_psd_df.columns.max():.2f} nm")
     
     # 6. 计算衍生物特征
-    surface_area = calculate_surface_area(final_psd_df)
+    surface_area = calculate_surface_area(final_psd_df) # unit: μm2/cm3
     status_df = get_instrument_status(final_psd_df)
     
     # 7. INP 对齐计算
@@ -229,7 +230,7 @@ def process_aerosol_data(config: dict):
     out_dir.mkdir(parents=True, exist_ok=True)
     
     final_psd_df.to_csv(out_dir / "final_psd(v1.0.2).csv")
-    inp_result.to_csv(out_dir / "INP+ns(v1.0.2).csv", index=False)
+    inp_result.to_csv(out_dir / "INP+ns(v1.0.3).csv", index=False)
     status_df.to_csv(out_dir / "instrument_status(v1.0.2).csv", index=False)
     
     print(f"💾 数据已成功输出到目录: {out_dir}")
