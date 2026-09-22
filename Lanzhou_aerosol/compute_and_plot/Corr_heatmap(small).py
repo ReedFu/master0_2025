@@ -2,7 +2,7 @@ import pandas as pd
 import scipy.stats as stats
 import numpy as np
 
-df_merged = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\Corr_heatmap.csv")
+df_merged = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\To_Corr_heatmap.csv")
 df_source = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\PMF Processed\source_contrib_clean.csv")
 
 df_merged['Time'] = pd.to_datetime(df_merged['Time'])
@@ -41,9 +41,9 @@ ELEMENT_LIST = [
     "N_1000-2500nm",
 ]
 
-INP_COL = "N_INP(#/L)"
+INP_COL = "n_s(#/m2)"   # 可选: "n_s(#/m2)" 或 "N_INP(#/L)"
 
-LOG_TAG = 0
+LOG_TAG = 0             # 0: 不进行对数转换, 1: 对数转换
 
 
 def calculate_corr_cell(df, temp, element, log_tag):
@@ -186,8 +186,11 @@ plt.yticks(rotation=0)
 # 隐藏横纵坐标的标题名（如果不想要原来的 index/columns 名称）
 ax.set_xlabel('')
 ax.set_ylabel('')
-ax.set_title('Pearson Correlation Coefficients ([INP]$_{-30}$ vs. Elements)', fontsize=14, pad=20)
+ax.set_title('Pearson Correlation Coefficients ($n_s(-30degC)$ vs. Elements)', fontsize=14, pad=20)
+#ax.set_title('Pearson Correlation Coefficients ([INP]$_{-30}$ vs. Elements)', fontsize=14, pad=20)
 plt.tight_layout()
 
-plt.savefig(r'D:\Coding\master0_2025\Thesis\Pearson_Heatmap(INP_vs_elements).png', dpi=500, bbox_inches='tight')
-print("\n热力图已保存至: D:\\Coding\\master0_2025\\Thesis\\Pearson_Heatmap(INP_vs_elements).png")
+plt.savefig(r'D:\Coding\master0_2025\Thesis\Pearson_Heatmap(n_s_vs_elements).png', dpi=500, bbox_inches='tight')
+print("\n热力图已保存至: D:\\Coding\\master0_2025\\Thesis\\Pearson_Heatmap(n_s_vs_elements).png")
+#plt.savefig(r'D:\Coding\master0_2025\Thesis\Pearson_Heatmap(INP_vs_elements).png', dpi=500, bbox_inches='tight')
+#print("\n热力图已保存至: D:\\Coding\\master0_2025\\Thesis\\Pearson_Heatmap(INP_vs_elements).png")
