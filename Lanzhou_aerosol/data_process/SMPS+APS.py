@@ -6,6 +6,7 @@
 # v1.0.1(special version, SP): `MAX_APS_DP` 参数调整为 20000 nm, 以包含更大粒径范围的 APS 数据, 便于绘制气溶胶粒子谱分布.
 # v1.0.2: 更新 INP 数据集为 v2.4.2 版本(修改部分列名和单位).
 # v1.0.3: 修改了列名`n_s`为`n_s(#/m2)`, 以明确单位; 增加部分注释
+# 注意: 建议使用 v2.0 及以上版本进行 SMPS 和 APS 的数据合并. 此脚本在 v2.0 版本后处于废弃状态.
 
 import pandas as pd
 import numpy as np
