@@ -18,8 +18,8 @@ STATUS_FILE = (
 )
 
 CONC_OUTPUT = r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS\aer_conc_results.csv"
-ELEMENT_FILE = r"D:\Coding\Data\Lanzhou_chemical\Corr(INP_vs_element).csv"
-MERGE_OUTPUT = r"D:\Coding\Data\Lanzhou_chemical\To_Corr_heatmap.csv"
+ELEMENT_FILE = r"D:\Coding\Data\Lanzhou_chemical\INP+ns+chemical.csv"
+MERGE_OUTPUT = r"D:\Coding\Data\Lanzhou_chemical\INP+ns+phys+chem.csv"
 
 
 # ============================================================
