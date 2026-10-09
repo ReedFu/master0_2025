@@ -3,7 +3,7 @@ import scipy.stats as stats
 import numpy as np
 
 df_merged = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\INP+ns+phys+chem.csv")
-df_source = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\PMF Processed\source_contrib_clean.csv")
+df_source = pd.read_csv(r"D:\Coding\Data\Lanzhou_chemical\PMF Processed (SigOnly)\source_contrib_clean.csv")
 
 df_merged['Time'] = pd.to_datetime(df_merged['Time'])
 df_source['Time'] = pd.to_datetime(df_source['Time'])
@@ -16,7 +16,7 @@ df_merged = pd.merge_asof(
 	direction="nearest",
 	tolerance=pd.Timedelta("1h")
 )
-df_merged.to_csv(r"D:\Coding\Data\Lanzhou_chemical\Corr_heatmap_merged.csv", index=False)
+#df_merged.to_csv(r"D:\Coding\Data\Lanzhou_chemical\Corr_heatmap_merged.csv", index=False)
 TARGET_TEMP = -30
 
 ELEMENT_LIST = [
