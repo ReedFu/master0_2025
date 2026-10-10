@@ -15,11 +15,11 @@ plt.rcParams['mathtext.it'] = 'Times New Roman'
 
 # ================= 2. 数据处理 =================
 # 提取粒径区间列名，并将其转换为浮点数，作为 X 轴坐标
-final_psd_df = pd.read_csv(r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS\final_psd(v2.0.1(SP)).csv", index_col=0, parse_dates=True)
+final_psd_df = pd.read_csv(r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS\final_psd(v2.0.2(SP)).csv", index_col=0, parse_dates=True)
 #status_df = pd.read_csv(r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS\instrument_status(v2.0.1(SP)).csv", index_col=0, parse_dates=True)
-inp_df = pd.read_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202409-202509)v2.4.2.csv", index_col=0, parse_dates=True)
+inp_df = pd.read_csv(r"D:\Coding\Data\Lanzhou_cfdc\processed\N_INP(202412-202509)v2.4.2.csv", index_col=0, parse_dates=True)
 
-#inp_df = inp_df[inp_df['Is_Significant'] == True]
+inp_df = inp_df[inp_df['Is_Significant'] == True]
 df= pd.merge_asof(inp_df, final_psd_df, left_index=True, right_index=True, direction='nearest', tolerance=pd.Timedelta('1h'))
 
 size_columns = df.columns[9:]
