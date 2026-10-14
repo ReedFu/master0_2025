@@ -4,17 +4,17 @@ import pandas as pd
 
 PSD_FILE = (
     r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS"
-    r"\final_psd(v2.0).csv"
+    r"\final_psd(v2.1).csv"
 )
 
 BIN_METADATA_FILE = (
     r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS"
-    r"\psd_bin_metadata(v2.0).csv"
+    r"\psd_bin_metadata(v2.1).csv"
 )
 
 STATUS_FILE = (
     r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS"
-    r"\instrument_status(v2.0).csv"
+    r"\instrument_status(v2.1).csv"
 )
 
 CONC_OUTPUT = r"D:\Coding\Data\Lanzhou_aerosol\SMPS+APS\aer_conc_results.csv"

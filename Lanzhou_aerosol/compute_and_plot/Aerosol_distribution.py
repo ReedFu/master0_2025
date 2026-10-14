@@ -100,5 +100,5 @@ for x in [100, 500, 1000, 2500, 10000]:
 ax.legend(loc='lower left', fontsize=12, frameon=False)
 
 plt.tight_layout()
-plt.savefig(r'D:\Coding\master0_2025\Thesis\fig 3.png', dpi=500,bbox_inches='tight')
-print("图表已保存至: D:\\Coding\\master0_2025\\Thesis\\fig 3.png")
+plt.savefig(r'D:\Coding\master0_2025\Thesis\Aerosol distribution.png', dpi=500,bbox_inches='tight')
+print("图表已保存至: D:\\Coding\\master0_2025\\Thesis\\Aerosol distribution.png")
