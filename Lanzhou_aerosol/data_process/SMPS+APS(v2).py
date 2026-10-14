@@ -3,12 +3,13 @@
 # 1. 读取并合并 SMPS 和 APS 导出数据, 生成气溶胶粒子谱数据集. 同时保留每个 bin 的粒径原始数据, 生成 bin_metadata 数据集.
 # 2. 根据 bin 的缺失情况判断 SMPS 和 APS 的运行状态, 并生成运行状态数据集.
 # 3. 根据气溶胶粒子谱数据, 计算表面积浓度. 将表面积浓度与 INP 数据进行最近时间匹配, 并计算 ns(#/m2), 生成 INP+ns 数据集.
-# 目前版本: v2.0.2
+# 目前版本: v2.1
 # 版本记录:
 # v2.0: 修改了 SMPS+APS 的合并逻辑; 生成 bin_metadata 数据集.
 # v2.0.1(special version, SP): `MAX_APS_DP` 参数调整为 20000 nm, 以包含更大粒径范围的 APS 数据, 便于绘制气溶胶粒子谱分布.
 # v2.0.2(SP): 仅保留2024.12.22之后的数据, 与INP数据时间范围保持一致, 用于绘制气溶胶粒子谱分布图.
 # 注意: SP版本仅 final_psd.csv 文件有用, 其他输出文件可忽略.
+# v2.1: 仅保留2024.12.22之后的数据, 与INP数据时间范围保持一致. `MAX_APS_DP`=2500.
 
 import numpy as np
 import pandas as pd
@@ -485,7 +486,7 @@ if __name__ == "__main__":
         "RHO_EFF": 1.5,                     # 气溶胶假设有效密度(g/cm3)
         "RHO_0": 1.0,                       # 标准密度(g/cm3)
         "SHAPE_FACTOR": 1.0,                # 气溶胶假设形状因子(球形粒子为1.0)
-        "MAX_APS_DP": 20000,                 # APS 最大粒径上限(nm)
+        "MAX_APS_DP": 2500,                 # APS 最大粒径上限(nm)
         "STATUS_MISSING_THRESHOLD": 0.9,    # 仪器状态判断时允许的缺失数据比例 (我们认为, 仪器只要 10% 以上的通道有数据, 就是在运行的)
         "INP_TOLERANCE": "1h",              # INP 数据与表面积浓度对齐时, 允许的时间差容忍范围
         "START_TIME": "2024-12-22 00:00",      # 仅保留该时间之后的粒子谱数据
@@ -505,7 +506,7 @@ if __name__ == "__main__":
         ],
 
         # 版本号
-        "VERSION": "v2.0.2(SP)",
+        "VERSION": "v2.1",
     }
 
     process_aerosol_data(CONFIG)
