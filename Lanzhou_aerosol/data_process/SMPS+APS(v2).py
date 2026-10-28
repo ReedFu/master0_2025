@@ -11,6 +11,10 @@
 # 注意: SP版本仅 final_psd.csv 文件有用, 其他输出文件可忽略.
 # v2.1: 仅保留2024.12.22之后的数据, 与INP数据时间范围保持一致. `MAX_APS_DP`=2500.
 
+# Note: the unit of dN/dlogDp (raw files) is #/cm3.
+# Note: the unit of Total_Surface_Area (calculated) is μm2/cm3.
+# Note: the unit of ns (calculated) is #/m2.
+
 import numpy as np
 import pandas as pd
 from pathlib import Path

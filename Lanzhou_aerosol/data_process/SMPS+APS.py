@@ -216,7 +216,7 @@ def process_aerosol_data(config: dict):
     aps_res = convert_aps_to_dm(aps_res, rho_eff=config["RHO_EFF"])
     
     # 5. 合并组装宽表
-    final_psd_df = merge_smps_aps(smps_res, aps_res, max_aps_dp=config["MAX_APS_DP"]) # dN/dlogDp (#/cm3)(perhaps)
+    final_psd_df = merge_smps_aps(smps_res, aps_res, max_aps_dp=config["MAX_APS_DP"]) # dN/dlogDp (#/cm3)
     print(f"✅ 合并完成！粒径范围: {final_psd_df.columns.min():.2f} nm ~ {final_psd_df.columns.max():.2f} nm")
     
     # 6. 计算衍生物特征
