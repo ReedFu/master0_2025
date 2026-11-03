@@ -2,4 +2,5 @@
 **/*.csv
 **/*.xlsx
 **/*.txt
+**/*.pdf
 Lanzhou_backtraj/trajectories/*
