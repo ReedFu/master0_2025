@@ -16,7 +16,7 @@ df_merged = pd.merge_asof(
 	direction="nearest",
 	tolerance=pd.Timedelta("1h")
 )
-#df_merged.to_csv(r"D:\Coding\Data\Lanzhou_chemical\Corr_heatmap_merged.csv", index=False)
+#df_merged.to_csv(r"D:\Coding\Data\Lanzhou_chemical\All_dataset.csv", index=False)
 TARGET_TEMP = -30
 
 ELEMENT_LIST = [
